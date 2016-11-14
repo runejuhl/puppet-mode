@@ -897,12 +897,18 @@ Used as `syntax-propertize-function' in Puppet Mode."
 (add-to-list 'align-dq-string-modes 'puppet-mode)
 (add-to-list 'align-open-comment-modes 'puppet-mode)
 
+(defun find-align-section (beg end)
+  (interactive)
+  (save-excursion))
+
 (defconst puppet-mode-align-rules
   '((puppet-resource-arrow
      (regexp . "\\(\\s-*\\)=>\\(\\s-*\\)")
      (group  . (1 2))
      (modes  . '(puppet-mode))
-     (separate . entire)))
+     (separate . "\\(=> {\\|[ ]*[{}]\\)[ ]*")
+     ;; (separate . "[ ]*\\(=>\\)?[ ]*[{}]\\s-*,?$")
+     ))
   "Align rules for Puppet Mode.")
 
 (defun puppet-align-block ()
@@ -914,6 +920,9 @@ Used as `syntax-propertize-function' in Puppet Mode."
         ;; Skip backwards over strings and comments
         (while (and beg (puppet-in-string-or-comment-p beg))
           (setq beg (search-backward "{" nil 'no-error)))
+        ;; Start by aligning all of the region. Then go to the top, go to the
+        ;; first (if any) block within the outer block. Align that. Repeat. When
+        ;; no more blocks, go to next '{'.
         (when beg
           (forward-list)
           (align beg (point)))))))
